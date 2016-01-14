@@ -273,9 +273,6 @@ class HelioProjective(BaseCoordinateFrame):
         'unitsphericalwrap180': [RepresentationMapping('lon', 'Tx', u.arcsec),
                                  RepresentationMapping('lat', 'Ty', u.arcsec)],
 
-        'cylindrical': [RepresentationMapping('rho', 'rho', u.km),
-                        RepresentationMapping('phi', 'psi', u.arcsec),
-                        RepresentationMapping('z', 'distance', u.km)]}
 
     D0 = FrameAttribute(default=(1*u.au).to(u.km))
     dateobs = TimeFrameAttributeSunPy()
@@ -333,3 +330,67 @@ class HelioProjective(BaseCoordinateFrame):
         return self.realize_frame(SphericalWrap180Representation(lon=lon,
                                                                  lat=lat,
                                                                  distance=d))
+
+class HelioProjectiveRadial(BaseCoordinateFrame):
+    """
+    The Helioprojective-Radial frame is a spherical coordinate system projected
+    on to the the celestial sphere.
+
+    The center of the solar disk is defined to be at the south pole of the sphere
+    and by definition has $\theta_p$ as 0 at this pole.
+
+    Parameters
+    ----------
+    representation: `~astropy.coordinates.BaseRepresentation` or None.
+        A representation object. If specified, other parameters must
+        be in keyword form.
+    Trho: `Angle` object.
+        Longitude coordinate.
+    psi: `Angle` object.
+        Latitude coordinate.
+    distance: Z-axis coordinate.
+        The radial distance from the observer to the coordinate point.
+    """
+
+    default_representation = SphericalWrap180Representation
+
+    _frame_specific_representation_info = {
+        'spherical': [RepresentationMapping('lon', 'Trho', u.arcsec),
+                      RepresentationMapping('lat', 'psi', u.arcsec),
+                      RepresentationMapping('distance', 'distance', u.km)],
+
+        'sphericalwrap180': [RepresentationMapping('lon', 'Trho', u.arcsec),
+                             RepresentationMapping('lat', 'psi', u.arcsec),
+                             RepresentationMapping('distance', 'distance', u.km)],
+
+        'unitspherical': [RepresentationMapping('lon', 'Trho', u.arcsec),
+                          RepresentationMapping('lat', 'psi', u.arcsec)],
+
+        'unitsphericalwrap180': [RepresentationMapping('lon', 'Trho', u.arcsec),
+                                 RepresentationMapping('lat', 'psi', u.arcsec)],
+
+    D0 = FrameAttribute(default=(1*u.au).to(u.km))
+    dateobs = TimeFrameAttributeSunPy()
+    L0 = FrameAttribute(default=0*u.deg)
+    B0 = FrameAttribute(default=0*u.deg)
+    RSun = FrameAttribute(default=RSUN_METERS.to(u.km))
+
+    def __init__(self, *args, **kwargs):
+        _rep_kwarg = kwargs.get('representation', None)
+
+        BaseCoordinateFrame.__init__(self, *args, **kwargs)
+
+        # If representation was explicitly passed, do not change the rep.
+        if not _rep_kwarg:
+            # The base __init__ will make this a UnitSphericalRepresentation
+            # This makes it Wrap180 instead
+            if isinstance(self._data, UnitSphericalRepresentation):
+                self._data = UnitSphericalWrap180Representation(lat=self._data.lat,
+                                                                lon=self._data.lon)
+                self.representation = UnitSphericalWrap180Representation
+            # Make a Spherical Wrap180 instead
+            elif isinstance(self._data, SphericalRepresentation):
+                self._data = SphericalWrap180Representation(lat=self._data.lat,
+                                                            lon=self._data.lon,
+                                                            distance=self._data.distance)
+                self.representation = SphericalWrap180Representation
