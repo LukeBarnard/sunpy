@@ -12,7 +12,7 @@ from astropy.coordinates.transformations import FunctionTransform
 # SunPy imports
 from sunpy import sun
 
-from .representation import SphericalWrap180Representation
+from .representation import SphericalWrap180Representation, UnitSphericalWrap180Representation
 from .frames import (HelioGraphicStonyhurst, HelioGraphicCarrington,
                      HelioCentric, HelioProjective, HelioProjectiveRadial)
 
@@ -151,20 +151,19 @@ def hpc_to_hpr(hpcframe, hprframe):
     lat = np.deg2rad(hpcframe.Ty)
     # Elongation calc:
     # Get numerator and denomenator for atan2 calculation
-    top = np.cos(lat)*np.cos(lon)
-    btm = np.sqrt((np.cos(lat)**2)*(np.sin(lon)**2) + (np.sin(lat)**2))
+    top = np.sqrt((np.cos(lat)**2)*(np.sin(lon)**2) + (np.sin(lat)**2))
+    btm = np.cos(lat)*np.cos(lon)
     el = np.arctan2(top,btm)
+    el -= u.deg*np.pi/2
     # Position angle calc:
-    top = np.sin(lat)
-    btm = -np.cos(lat)*np.sin(lon)
+    top = -np.cos(lat)*np.sin(lon)
+    btm = np.sin(lat)
     pa = np.arctan2(top,btm)
     # Put it back into degs
-    # Take 90 degrees off both and times it by -1, because...
-    pi2 = u.Quantity(np.pi/2,unit=u.rad)
     el = np.rad2deg(el)
     pa = np.rad2deg(pa)
 
-    representation = UnitSphericalRepresentation(el, pa)
+    representation = UnitSphericalRepresentation(lat=el, lon=pa)
     return hprframe.realize_frame(representation)
 
 
@@ -174,3 +173,19 @@ def hpr_to_hpc(hprframe, hpcframe):
     """
     Transform from the hprframe to a hpcframe
     """
+    # Get params in rads
+    el = np.deg2rad(hprframe.psi)
+    pa = np.deg2rad(hprframe.dec)
+    # pi/2 correction
+    el += u.deg*np.pi/2
+    # Longitude conversion
+    top = -np.sin(el)*np.sin(pa)
+    btm = np.cos(el)
+    lon = np.arctan2(top,btm)
+    # Latitude conversion
+    lat = np.arcsin(np.sin(el)*np.cos(pa))
+    # Convert back to degrees.
+    lon = np.rad2deg(lon)
+    lat = np.rad2deg(lat)
+    representation = UnitSphericalWrap180Representation(lon=lon, lat=lat)
+    return hpcframe.realize_frame(representation)
