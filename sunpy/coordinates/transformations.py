@@ -13,7 +13,7 @@ from sunpy import sun
 
 from .representation import SphericalWrap180Representation
 from .frames import (HelioGraphicStonyhurst, HelioGraphicCarrington,
-                     HelioCentric, HelioProjective)
+                     HelioCentric, HelioProjective, HelioProjectiveRadial)
 
 
 __all__ = ['hgs_to_hgc', 'hgc_to_hgs', 'hcc_to_hpc',
@@ -137,3 +137,19 @@ def hgs_to_hcc(heliogcoord, heliocframe):
 
     representation = CartesianRepresentation(x.to(u.km), y.to(u.km), zz.to(u.km))
     return heliocframe.realize_frame(representation)
+
+
+@frame_transform_graph.transform(FunctionTransform, HelioProjective,
+                                 HelioProjectiveRadial)
+def hpc_to_hpr(hpcframe, hprframe):
+    """
+    Transform from the hpcframe to a hprframe
+    """
+
+
+@frame_transform_graph.transform(FunctionTransform,
+                                 HelioProjectiveRadial, HelioProjective)
+def hpr_to_hpc(hprframe, hpcframe):
+    """
+    Transform from the hprframe to a hpcframe
+    """

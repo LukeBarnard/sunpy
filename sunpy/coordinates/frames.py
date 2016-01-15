@@ -344,8 +344,8 @@ class HelioProjectiveRadial(BaseCoordinateFrame):
     representation: `~astropy.coordinates.BaseRepresentation` or None.
         A representation object. If specified, other parameters must
         be in keyword form.
-    Trho: `Angle` object.
-        Longitude coordinate.
+    dec: `Angle` object.
+        Declination Parameter.
     psi: `Angle` object.
         Latitude coordinate.
     distance: Z-axis coordinate.
@@ -355,18 +355,18 @@ class HelioProjectiveRadial(BaseCoordinateFrame):
     default_representation = SphericalWrap180Representation
 
     _frame_specific_representation_info = {
-        'spherical': [RepresentationMapping('lon', 'Trho', u.arcsec),
+        'spherical': [RepresentationMapping('lon', 'dec', u.arcsec),
                       RepresentationMapping('lat', 'psi', u.arcsec),
                       RepresentationMapping('distance', 'distance', u.km)],
 
-        'sphericalwrap180': [RepresentationMapping('lon', 'Trho', u.arcsec),
+        'sphericalwrap180': [RepresentationMapping('lon', 'dec', u.arcsec),
                              RepresentationMapping('lat', 'psi', u.arcsec),
                              RepresentationMapping('distance', 'distance', u.km)],
 
-        'unitspherical': [RepresentationMapping('lon', 'Trho', u.arcsec),
+        'unitspherical': [RepresentationMapping('lon', 'dec', u.arcsec),
                           RepresentationMapping('lat', 'psi', u.arcsec)],
 
-        'unitsphericalwrap180': [RepresentationMapping('lon', 'Trho', u.arcsec),
+        'unitsphericalwrap180': [RepresentationMapping('lon', 'dec', u.arcsec),
                                  RepresentationMapping('lat', 'psi', u.arcsec)],
 
     D0 = FrameAttribute(default=(1*u.au).to(u.km))
